@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sample.mybatisspring.ibatis.mapper.CustomerMapper">
+	<select id="getCustomer" resultMap="customerResultMap" parameterType="map">
+		SELECT COUNT (*) OVER (PARTITION BY -1) 
+		     , C.ID_CUST
+		     , C.NM_CUST
+		     , C.ID_CATG
+		     , C.CD_ACTV
+		     , CAT.SG_CATG
+		     , CAT.DS_CATG
+		  FROM TB_CUST C
+		  JOIN TB_CATG CAT ON CAT.ID_CATG = C.ID_CATG
+		<where>
+			<if test="filter.id != null" >          AND C.ID_CUST = #{filter.id}                    </if>
+			<if test="filter.name != null">         AND C.NM_CUST LIKE '%' || #{filter.name} || '%' </if>
+			<if test="filter.category != null " >   AND C.ID_CATG = #{filter.category}              </if>
+		</where>
+		<if test="page != null">
+			OFFSET #{page.offSet} ROWS FETCH NEXT #{page.size} ROWS ONLY
+		</if>
+	</select>
+
+	<select id="getCustomers" resultMap="customersResultMap" parameterType="map">
+		SELECT COUNT (*) OVER (PARTITION BY -1) TOTAL
+		     , C.ID_CUST
+		     , C.NM_CUST
+		     , C.ID_CATG
+		     , C.CD_ACTV
+		     , CAT.SG_CATG
+		     , CAT.DS_CATG
+		  FROM TB_CUST C
+		  JOIN TB_CATG CAT ON CAT.ID_CATG = C.ID_CATG
+		<where>
+			<if test="filter.id != null" >          AND C.ID_CUST = #{filter.id}                    </if>
+			<if test="filter.name != null">         AND C.NM_CUST LIKE '%' || #{filter.name} || '%' </if>
+			<if test="filter.category != null " >   AND C.ID_CATG = #{filter.category}              </if>
+		</where>
+		<if test="page != null">
+			OFFSET #{page.offSet} ROWS FETCH NEXT #{page.size} ROWS ONLY
+		</if>
+	</select>
+
+	<resultMap type="com.sample.mybatisspring.service.pageable.PageWrapperImpl" id="customersResultMap">
+		<result property="total"				column="TOTAL"/>
+		<collection property="content" resultMap="customerResultMap" ofType="com.sample.mybatisspring.service.dto.CustomerDTO" />
+	</resultMap>
+
+	<resultMap type="com.sample.mybatisspring.service.dto.CustomerDTO" id="customerResultMap">
+		<id property="id" 						column="ID_CUST" />
+		<result property="name"					column="NM_CUST" />
+		<result property="status"				column="CD_ACTV" />
+	</resultMap>
+
+</mapper>
